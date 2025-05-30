@@ -78,8 +78,6 @@ describe('RetryMessageUseCase', () => {
   });
 
   it('should return early if message does not exist in _processMessage', async () => {
-    // Directly test the private method via "as any"
     await (useCase as any)._processMessage('non-existent-id');
-    // No exception, just returns
   });
 });
