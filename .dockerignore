@@ -1,0 +1,10 @@
+node_modules
+dist
+coverage
+.git
+Dockerfile
+Dockerfile.dev
+*.md
+test
+.vscode
+.env*
