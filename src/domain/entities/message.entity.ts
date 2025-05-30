@@ -1,11 +1,11 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { MessageStatus } from "src/shared/enum";
+import { ApiProperty } from '@nestjs/swagger';
+import { MessageStatus } from 'src/shared/enum';
 
 export class Message {
   @ApiProperty({
-  description: 'Unique identifier for the message',
-  example: '123e4567-e89b-12d3-a456-426614174000',
-  type: String,
+    description: 'Unique identifier for the message',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    type: String,
   })
   id: string;
 

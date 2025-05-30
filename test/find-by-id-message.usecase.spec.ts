@@ -1,7 +1,7 @@
-import { FindByIdMessageUseCase } from "src/application/usecases/find-by-id-message.usecase";
-import { Message } from "src/domain/entities/message.entity";
-import { MessageRepository } from "src/infra/repositories/message.repository";
-import { MessageStatus } from "src/shared/enum";
+import { FindByIdMessageUseCase } from 'src/application/usecases/find-by-id-message.usecase';
+import { Message } from 'src/domain/entities/message.entity';
+import { MessageRepository } from 'src/infra/repositories/message.repository';
+import { MessageStatus } from 'src/shared/enum';
 
 describe('FindByIdMessageUseCase', () => {
   let useCase: FindByIdMessageUseCase;
@@ -28,6 +28,8 @@ describe('FindByIdMessageUseCase', () => {
   });
 
   it('should throw if message not found', async () => {
-    await expect(useCase.execute('not-exist')).rejects.toThrow('Message not found');
+    await expect(useCase.execute('not-exist')).rejects.toThrow(
+      'Message not found',
+    );
   });
 });

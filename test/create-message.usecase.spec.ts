@@ -25,59 +25,59 @@ describe('CreateMessageUseCase', () => {
     expect(all[0].content).toBe(payload);
   });
 
-   it('should process message and update status SUCCESS or FAILED', async () => {
-        jest.useFakeTimers();
-        const payload = 'Test with processing';
-        const message = await useCase.execute(payload);
+  it('should process message and update status SUCCESS or FAILED', async () => {
+    jest.useFakeTimers();
+    const payload = 'Test with processing';
+    const message = await useCase.execute(payload);
 
-        jest.advanceTimersByTime(1600);
+    jest.advanceTimersByTime(1600);
 
-        // Aguarda timers e microtasks
-        await jest.runAllTicks();
-        await jest.runAllTimersAsync();
-        await Promise.resolve();
+    // Aguarda timers e microtasks
+    await jest.runAllTicks();
+    await jest.runAllTimersAsync();
+    await Promise.resolve();
 
-        const updated = await repo.findById(message.id);
-        expect(['SUCCESS', 'FAILED']).toContain(updated.status);
+    const updated = await repo.findById(message.id);
+    expect(['SUCCESS', 'FAILED']).toContain(updated.status);
 
-        jest.useRealTimers();
-    });
+    jest.useRealTimers();
+  });
 
-    it('should process message and update status to FAILED', async () => {
-        // Força o Math.random() para cair no else
-        jest.spyOn(Math, 'random').mockReturnValue(0.1);
-        const payload = 'Test error flow';
-        const message = await useCase.execute(payload);
+  it('should process message and update status to FAILED', async () => {
+    // Força o Math.random() para cair no else
+    jest.spyOn(Math, 'random').mockReturnValue(0.1);
+    const payload = 'Test error flow';
+    const message = await useCase.execute(payload);
 
-        await new Promise(res => setTimeout(res, 1600));
-        const updated = await repo.findById(message.id);
+    await new Promise((res) => setTimeout(res, 1600));
+    const updated = await repo.findById(message.id);
 
-        expect(updated.status).toBe('FAILED');
-        expect(updated.lastError).toBe('Simulated error');
-        expect(updated.retries).toBe(1);
+    expect(updated.status).toBe('FAILED');
+    expect(updated.lastError).toBe('Simulated error');
+    expect(updated.retries).toBe(1);
 
-        jest.spyOn(Math, 'random').mockRestore();
-    });
+    jest.spyOn(Math, 'random').mockRestore();
+  });
 
-    it('should process message and update status to SUCCESS', async () => {
-        // Força o Math.random() para cair no if (succeed)
-        jest.spyOn(Math, 'random').mockReturnValue(0.9); // > 0.5
-        const payload = 'Test success flow';
-        const message = await useCase.execute(payload);
+  it('should process message and update status to SUCCESS', async () => {
+    // Força o Math.random() para cair no if (succeed)
+    jest.spyOn(Math, 'random').mockReturnValue(0.9); // > 0.5
+    const payload = 'Test success flow';
+    const message = await useCase.execute(payload);
 
-        await new Promise(res => setTimeout(res, 1600));
-        const updated = await repo.findById(message.id);
+    await new Promise((res) => setTimeout(res, 1600));
+    const updated = await repo.findById(message.id);
 
-        expect(updated.status).toBe('SUCCESS');
-        expect(updated.lastError).toBeUndefined();
+    expect(updated.status).toBe('SUCCESS');
+    expect(updated.lastError).toBeUndefined();
 
-        jest.spyOn(Math, 'random').mockRestore();
-    });
+    jest.spyOn(Math, 'random').mockRestore();
+  });
 
-    it('should return early if message not found in _processMessage', async () => {
-        // Garante que o ID passado não existe no repositório
-        // Chama _processMessage diretamente
-        await (useCase as any)._processMessage('id-inexistente');
-        // Não deve lançar, apenas retorna (linha 29 coberta!)
-    });
+  it('should return early if message not found in _processMessage', async () => {
+    // Garante que o ID passado não existe no repositório
+    // Chama _processMessage diretamente
+    await (useCase as any)._processMessage('id-inexistente');
+    // Não deve lançar, apenas retorna (linha 29 coberta!)
+  });
 });

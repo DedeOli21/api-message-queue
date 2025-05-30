@@ -1,4 +1,13 @@
-import { Controller, Post, Body, Param, Get, Query, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  Get,
+  Query,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { CreateMessageUseCase } from 'src/application/usecases/create-message.usecase';
 import { FindByIdMessageUseCase } from 'src/application/usecases/find-by-id-message.usecase';
@@ -14,11 +23,10 @@ export class MessageController {
     private readonly findByIdMessageUsecase: FindByIdMessageUseCase,
     private readonly retryMessageUseCase: RetryMessageUseCase,
     private readonly findAllMessageUseCase: FindAllMessageUseCase,
-
-) {}
+  ) {}
 
   @Post()
-  @ApiOperation({summary: 'Create a new message'})
+  @ApiOperation({ summary: 'Create a new message' })
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'The message has been successfully created.',
@@ -32,7 +40,7 @@ export class MessageController {
     return this.createMessageUsecase.execute(body.content);
   }
 
-  @ApiOperation({summary: 'Get a message by ID'})
+  @ApiOperation({ summary: 'Get a message by ID' })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'The message has been successfully retrieved.',
@@ -43,7 +51,7 @@ export class MessageController {
     return this.findByIdMessageUsecase.execute(id);
   }
 
-  @ApiOperation({summary: 'Retry processing a message'})
+  @ApiOperation({ summary: 'Retry processing a message' })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'The message has been successfully retried.',
@@ -58,7 +66,7 @@ export class MessageController {
     }
   }
 
-  @ApiOperation({summary: 'List all messages'})
+  @ApiOperation({ summary: 'List all messages' })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'List of messages retrieved successfully.',
@@ -71,7 +79,7 @@ export class MessageController {
   @ApiQuery({
     name: 'status',
     required: false,
-    description: 'Filter messages by status (e.g., "pending", "processed")'
+    description: 'Filter messages by status (e.g., "pending", "processed")',
   })
   @Get()
   async list(@Query('status') status?: string) {

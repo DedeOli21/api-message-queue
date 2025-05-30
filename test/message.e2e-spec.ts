@@ -27,9 +27,7 @@ describe('MessageController (e2e)', () => {
   });
 
   it('/messages (GET) - list', async () => {
-    const res = await request(app.getHttpServer())
-      .get('/messages')
-      .expect(200);
+    const res = await request(app.getHttpServer()).get('/messages').expect(200);
 
     expect(Array.isArray(res.body)).toBeTruthy();
   });

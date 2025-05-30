@@ -7,10 +7,10 @@ import { MessageController } from 'src/presentation/controllers/message.controll
 import { DatabaseModule } from 'src/infra/database/database.module';
 
 const usecases = [
-    CreateMessageUseCase,
-    FindByIdMessageUseCase,
-    RetryMessageUseCase,
-    FindAllMessageUseCase
+  CreateMessageUseCase,
+  FindByIdMessageUseCase,
+  RetryMessageUseCase,
+  FindAllMessageUseCase,
 ];
 
 @Module({

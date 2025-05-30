@@ -6,7 +6,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   providers: [
     // { provide: 'IFarmRepository', useClass: FarmImplementation },
   ],
-  exports: [
-  ],
+  exports: [],
 })
 export class InfraModule {}

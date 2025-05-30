@@ -13,7 +13,9 @@ describe('RetryMessageUseCase', () => {
   });
 
   it('should throw if message does not exist', async () => {
-    await expect(useCase.execute('non-existent-id')).rejects.toThrow('Message not found');
+    await expect(useCase.execute('non-existent-id')).rejects.toThrow(
+      'Message not found',
+    );
   });
 
   it('should throw if status is not FAILED', async () => {
@@ -27,7 +29,9 @@ describe('RetryMessageUseCase', () => {
     };
     await repo.save(msg);
 
-    await expect(useCase.execute('1')).rejects.toThrow('Only failed messages can be retried');
+    await expect(useCase.execute('1')).rejects.toThrow(
+      'Only failed messages can be retried',
+    );
   });
 
   it('should process FAILED message and set status to SUCCESS', async () => {
@@ -43,7 +47,7 @@ describe('RetryMessageUseCase', () => {
     await repo.save(msg);
 
     await useCase.execute('2');
-    await new Promise(res => setTimeout(res, 1600));
+    await new Promise((res) => setTimeout(res, 1600));
     const updated = await repo.findById('2');
     expect(updated.status).toBe(MessageStatus.SUCCESS);
     expect(updated.lastError).toBeUndefined();
@@ -64,7 +68,7 @@ describe('RetryMessageUseCase', () => {
     await repo.save(msg);
 
     await useCase.execute('3');
-    await new Promise(res => setTimeout(res, 1600));
+    await new Promise((res) => setTimeout(res, 1600));
     const updated = await repo.findById('3');
     expect(updated.status).toBe(MessageStatus.FAILED);
     expect(updated.lastError).toBe('Simulated error');

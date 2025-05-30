@@ -6,11 +6,7 @@ import { MessageRepository } from '../repositories/message.repository';
 @Global()
 @Module({
   imports: [TypeOrmModule.forFeature([])],
-  providers: [
-    { provide: IMessageRepository, useClass: MessageRepository },
-  ],
-  exports: [
-    IMessageRepository
-  ],
+  providers: [{ provide: IMessageRepository, useClass: MessageRepository }],
+  exports: [IMessageRepository],
 })
 export class DatabaseModule {}

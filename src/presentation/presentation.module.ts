@@ -4,8 +4,6 @@ import { MessageController } from './controllers/message.controller';
 
 @Module({
   imports: [ApplicationModule],
-  controllers: [
-    MessageController
-  ],
+  controllers: [MessageController],
 })
 export class PresentationModule {}
