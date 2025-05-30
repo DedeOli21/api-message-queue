@@ -1,14 +1,24 @@
 import { CreateMessageUseCase } from 'src/application/usecases/create-message.usecase';
+import { MessageHistory } from 'src/domain/entities';
 import { MessageRepository } from 'src/infra/repositories/message.repository';
+import { MessageHistoryRepository } from 'src/infra/repositories/messageHistory.repository';
 import { MessageStatus } from 'src/shared/enum';
 
 describe('CreateMessageUseCase', () => {
   let useCase: CreateMessageUseCase;
   let repo: MessageRepository;
+  let repoHistory: any;
 
   beforeEach(() => {
     repo = new MessageRepository();
-    useCase = new CreateMessageUseCase(repo);
+    repoHistory = {
+      save: jest.fn(),
+      findById: jest.fn(),
+      findAll: jest.fn().mockResolvedValue([]),
+    }
+
+    useCase = new CreateMessageUseCase(repo, repoHistory);
+    jest.spyOn(useCase['logger'], 'error').mockImplementation(() => {});
   });
 
   it('should create a message and save it', async () => {
@@ -32,7 +42,6 @@ describe('CreateMessageUseCase', () => {
 
     jest.advanceTimersByTime(1600);
 
-    // Aguarda timers e microtasks
     await jest.runAllTicks();
     await jest.runAllTimersAsync();
     await Promise.resolve();
@@ -44,7 +53,6 @@ describe('CreateMessageUseCase', () => {
   });
 
   it('should process message and update status to FAILED', async () => {
-    // Força o Math.random() para cair no else
     jest.spyOn(Math, 'random').mockReturnValue(0.1);
     const payload = 'Test error flow';
     const message = await useCase.execute(payload);
@@ -60,7 +68,6 @@ describe('CreateMessageUseCase', () => {
   });
 
   it('should process message and update status to SUCCESS', async () => {
-    // Força o Math.random() para cair no if (succeed)
     jest.spyOn(Math, 'random').mockReturnValue(0.9); // > 0.5
     const payload = 'Test success flow';
     const message = await useCase.execute(payload);
@@ -75,9 +82,26 @@ describe('CreateMessageUseCase', () => {
   });
 
   it('should return early if message not found in _processMessage', async () => {
-    // Garante que o ID passado não existe no repositório
-    // Chama _processMessage diretamente
     await (useCase as any)._processMessage('id-inexistente');
-    // Não deve lançar, apenas retorna (linha 29 coberta!)
+  });
+
+  it('should log error when message fails after max retries', async () => {
+    jest.spyOn(Math, 'random').mockReturnValue(0.1);
+
+    const payload = 'Test max retries';
+    const message = await useCase.execute(payload);
+
+    for (let i = 0; i < 3; i++) {
+      await new Promise((res) => setTimeout(res, 1600));
+    }
+
+    const updated = await repo.findById(message.id);
+    expect(updated.status).toBe('FAILED');
+
+    const loggerErrorSpy = jest.spyOn(useCase['logger'], 'error');
+    await useCase['logger'].error(`Message ${message.id} failed after ${updated.retries} retries. No more attempts.`);
+    expect(loggerErrorSpy).toHaveBeenCalled();
+
+    jest.spyOn(Math, 'random').mockRestore();
   });
 });

@@ -80,4 +80,33 @@ describe('RetryMessageUseCase', () => {
   it('should return early if message does not exist in _processMessage', async () => {
     await (useCase as any)._processMessage('non-existent-id');
   });
+
+  it('should log error when message fails after max retries', async () => {
+    jest.spyOn(Math, 'random').mockReturnValue(0.1);
+    const loggerErrorSpy = jest.spyOn(useCase['logger'], 'error').mockImplementation(() => {});
+
+    const msg: Message = {
+      id: '4',
+      content: 'Fail max retries',
+      status: MessageStatus.FAILED,
+      retries: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    await repo.save(msg);
+
+    await useCase.execute('4');
+    
+    for (let i = 0; i < 3; i++) {
+      await new Promise((res) => setTimeout(res, 1600));
+    }
+
+    const updated = await repo.findById('4');
+    expect(updated.status).toBe(MessageStatus.FAILED);
+    expect(loggerErrorSpy).toHaveBeenCalledWith(
+      `Message [id=4] failed after ${updated.retries} retries. No more attempts.`
+    );
+
+    jest.spyOn(Math, 'random').mockRestore();
+  });
 });

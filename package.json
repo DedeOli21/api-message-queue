@@ -86,7 +86,8 @@
       "!**/main.ts",
       "!**/swagger.ts",
       "!**/*.interface.ts",
-      "!**/*.entity.ts"
+      "!**/*.entity.ts",
+      "!src/domain/entities/**/index.ts"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
