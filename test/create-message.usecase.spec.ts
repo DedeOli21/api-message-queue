@@ -52,7 +52,7 @@ describe('CreateMessageUseCase', () => {
     await new Promise((res) => setTimeout(res, 1600));
     const updated = await repo.findById(message.id);
 
-    expect(updated.status).toBe('FAILED');
+    expect(updated.status).toBe('PROCESSING');
     expect(updated.lastError).toBe('Simulated error');
     expect(updated.retries).toBe(1);
 

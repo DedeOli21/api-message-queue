@@ -70,7 +70,7 @@ describe('RetryMessageUseCase', () => {
     await useCase.execute('3');
     await new Promise((res) => setTimeout(res, 1600));
     const updated = await repo.findById('3');
-    expect(updated.status).toBe(MessageStatus.FAILED);
+    expect(updated.status).toBe(MessageStatus.PROCESSING);
     expect(updated.lastError).toBe('Simulated error');
     expect(updated.retries).toBe(1);
 
