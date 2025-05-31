@@ -8,7 +8,15 @@ import { MessageHistoryRepository } from '../repositories/messageHistory.reposit
 
 @Global()
 @Module({
-  imports: [TypeOrmModule.forFeature([Message, MessageHistory])],
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'sqlite',
+      database: 'message_history.sqlite',
+      entities: [MessageHistory],
+      synchronize: true,
+    }),
+    TypeOrmModule.forFeature([MessageHistory])
+  ],
   providers: [
     { provide: IMessageRepository, useClass: MessageRepository },
     { provide: IMessageHistoryRepository, useClass: MessageHistoryRepository },

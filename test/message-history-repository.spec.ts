@@ -8,7 +8,6 @@ describe('MessageHistoryRepository', () => {
   let mockTypeormRepo: jest.Mocked<Repository<MessageHistory>>;
 
   beforeEach(() => {
-    // Mock do TypeORM Repository
     mockTypeormRepo = {
       save: jest.fn(),
       findOne: jest.fn(),
@@ -19,25 +18,33 @@ describe('MessageHistoryRepository', () => {
   });
 
   it('should save a message history', async () => {
-    const history: MessageHistory = {
-      id: '1',
+    const historyToSave: Partial<MessageHistory> = {
       messageId: 'msg-1',
       status: MessageStatus.SUCCESS,
-      error: null,
+      error: undefined,
       timestamp: new Date(),
       retries: 0,
     };
+    const savedHistory: MessageHistory = {
+      id: 1,
+      messageId: 'msg-1',
+      status: MessageStatus.SUCCESS,
+      error: undefined,
+      timestamp: historyToSave.timestamp,
+      retries: 0,
+    };
 
-    mockTypeormRepo.save.mockResolvedValue(history);
+    mockTypeormRepo.save.mockResolvedValue(savedHistory);
 
-    const saved = await repo.save(history);
-    expect(saved).toEqual(history);
-    expect(mockTypeormRepo.save).toHaveBeenCalledWith(history);
+    const result = await repo.save(historyToSave as MessageHistory);
+    expect(result).toEqual(savedHistory);
+    expect(mockTypeormRepo.save).toHaveBeenCalledWith(historyToSave);
   });
 
   it('should find a message history by id', async () => {
-    const history: MessageHistory = {
-      id: '2',
+    const historyId = 2;
+    const expectedHistory: MessageHistory = {
+      id: historyId,
       messageId: 'msg-2',
       status: MessageStatus.FAILED,
       error: 'err',
@@ -45,20 +52,20 @@ describe('MessageHistoryRepository', () => {
       retries: 1,
     };
 
-    mockTypeormRepo.findOne.mockResolvedValue(history);
+    mockTypeormRepo.findOne.mockResolvedValue(expectedHistory);
 
-    const found = await repo.findById('2');
-    expect(found).toEqual(history);
-    expect(mockTypeormRepo.findOne).toHaveBeenCalledWith({ where: { id: '2' } });
+    const found = await repo.findById(historyId);
+    expect(found).toEqual(expectedHistory);
+    expect(mockTypeormRepo.findOne).toHaveBeenCalledWith({ where: { id: historyId } });
   });
 
   it('should find all message histories (without filter)', async () => {
     const histories: MessageHistory[] = [
       {
-        id: '3',
+        id: 3,
         messageId: 'msg-3',
         status: MessageStatus.SUCCESS,
-        error: null,
+        error: undefined,
         timestamp: new Date(),
         retries: 0,
       },
@@ -73,15 +80,17 @@ describe('MessageHistoryRepository', () => {
     const all = await repo.findAll();
     expect(all).toEqual(histories);
     expect(mockTypeormRepo.createQueryBuilder).toHaveBeenCalledWith('messageHistory');
+    expect(mockQueryBuilder.where).not.toHaveBeenCalled();
     expect(mockQueryBuilder.getMany).toHaveBeenCalled();
   });
 
   it('should find all message histories (with status filter)', async () => {
+    const filterStatus = MessageStatus.FAILED;
     const histories: MessageHistory[] = [
       {
-        id: '4',
+        id: 4,
         messageId: 'msg-4',
-        status: MessageStatus.FAILED,
+        status: filterStatus,
         error: 'err',
         timestamp: new Date(),
         retries: 1,
@@ -94,9 +103,9 @@ describe('MessageHistoryRepository', () => {
     };
     mockTypeormRepo.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
 
-    const result = await repo.findAll('FAILED');
+    const result = await repo.findAll(filterStatus);
     expect(result).toEqual(histories);
-    expect(mockQueryBuilder.where).toHaveBeenCalledWith('messageHistory.status = :status', { status: 'FAILED' });
+    expect(mockQueryBuilder.where).toHaveBeenCalledWith('messageHistory.status = :status', { status: filterStatus });
     expect(mockQueryBuilder.getMany).toHaveBeenCalled();
   });
 });

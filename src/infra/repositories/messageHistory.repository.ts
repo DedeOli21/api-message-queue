@@ -11,7 +11,7 @@ export class MessageHistoryRepository implements IMessageHistoryRepository {
     return this.messageHistoryRepository.save(messageHistory);
   }
 
-  async findById(id: string): Promise<MessageHistory | undefined> {
+  async findById(id: number): Promise<MessageHistory | undefined> {
     return this.messageHistoryRepository.findOne({ where: { id } });
   }
 

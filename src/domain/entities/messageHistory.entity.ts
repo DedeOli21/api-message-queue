@@ -1,13 +1,13 @@
 import { MessageStatus } from 'src/shared/enum';
 import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity()
+@Entity('message_history')
 export class MessageHistory {
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
 
   @Index()
-  @PrimaryGeneratedColumn('uuid')
+  @Column('uuid')
   messageId: string;
 
   @Column()
@@ -16,7 +16,7 @@ export class MessageHistory {
   @Column({ type: 'text', nullable: true })
   error?: string;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   timestamp: Date;
 
   @Column({ type: 'int', default: 0 })
