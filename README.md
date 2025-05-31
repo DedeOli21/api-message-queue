@@ -46,7 +46,7 @@ Esta é uma API construída com NestJS para simular o processamento de mensagens
 
 1.  **Clone o repositório:**
     ```bash
-    git clone <URL_DO_REPOSITORIO>
+    git clone https://github.com/DedeOli21/api-message-queue
     cd api-message-queue
     ```
 
@@ -93,12 +93,12 @@ O projeto inclui um `Dockerfile` e um `docker-compose.yml` para facilitar a exec
 2.  **Construir a imagem e iniciar os contêineres (produção):**
     Este comando usa o `Dockerfile` otimizado para produção.
     ```bash
-    docker-compose -f docker-compose.yml up --build app
+    docker-compose up --build app
     ```
 
 3.  **Parar os contêineres:**
     ```bash
-    docker-compose -f docker-compose.yml down
+    docker-compose down
     ```
 
 O `docker-compose.yml` também define um serviço `prometheus` que pode ser iniciado para coletar métricas da aplicação.
@@ -197,21 +197,9 @@ graph LR
 main    <------ release <------ develop <------ feature
 ^      /           /           /
 |     /           /           /
-hotfix -----------/           /
-        ---------------------/
+hotfix -----------/----------/
+
 ```
-
-*(O diagrama acima é uma representação simplificada. Para a imagem exata que você forneceu, veja abaixo)*
-
-```javascript
-main    <-- -- -- release <-- -- -- develop <-- -- -- feature
-^      /           /           /
-|     /           /           /
-hotfix -- -- -- -- -- -- -- --/           /
-        -- -- -- -- -- -- -- -- -- -- -- --/
-```
-
-
 ## Estrutura do Projeto
 
 O projeto segue uma arquitetura em camadas, inspirada na Clean Architecture:
