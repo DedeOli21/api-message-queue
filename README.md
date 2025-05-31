@@ -1,73 +1,243 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# API de Filas de Mensagens com NestJS
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Esta é uma API construída com NestJS para simular o processamento de mensagens, incluindo funcionalidades como retentativas, histórico de processamento e métricas Prometheus.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Sumário
 
-## Description
+- [Tecnologias Utilizadas](#tecnologias-utilizadas)
+- [Pré-requisitos](#pré-requisitos)
+- [Configuração do Ambiente](#configuração-do-ambiente)
+  - [Variáveis de Ambiente](#variáveis-de-ambiente)
+- [Como Rodar a Aplicação](#como-rodar-a-aplicação)
+  - [Usando Yarn (Desenvolvimento)](#usando-yarn-desenvolvimento)
+  - [Usando Docker](#usando-docker)
+- [Testes](#testes)
+  - [Testes Unitários/Integração](#testes-unitáriosintegração)
+  - [Testes End-to-End (e2e)](#testes-end-to-end-e2e)
+  - [Cobertura de Testes](#cobertura-de-testes)
+- [Linting e Formatação](#linting-e-formatação)
+- [Documentação da API (Swagger)](#documentação-da-api-swagger)
+- [Métricas (Prometheus)](#métricas-prometheus)
+- [Git Flow (Fluxo de Desenvolvimento)](#git-flow-fluxo-de-desenvolvimento)
+- [Estrutura do Projeto](#estrutura-do-projeto)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Tecnologias Utilizadas
 
-## Installation
+- [NestJS (Node.js framework)](https://nestjs.com/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [TypeORM](https://typeorm.io/) com [SQLite](https://www.sqlite.org/index.html) para persistência do histórico
+- [Docker](https://www.docker.com/) & [Docker Compose](https://docs.docker.com/compose/)
+- [Yarn](https://yarnpkg.com/) (Gerenciador de Pacotes)
+- [Swagger (OpenAPI)](https://swagger.io/) para documentação da API
+- [Prometheus](https://prometheus.io/) para monitoramento de métricas
+- [Pino (Logger)](https://getpino.io/) com `nestjs-pino`
+- [Jest](https://jestjs.io/) para testes
+- [ESLint](https://eslint.org/) e [Prettier](https://prettier.io/) para linting e formatação de código
+- [Husky](https://typicode.github.io/husky/) & [lint-staged](https://github.com/okonet/lint-staged) para pre-commit hooks
+
+## Pré-requisitos
+
+- [Node.js](https://nodejs.org/) (versão >= 18.x recomendada)
+- [Yarn](https://yarnpkg.com/getting-started/install) (versão >= 1.22.x ou Yarn 2+)
+- [Docker](https://docs.docker.com/get-docker/) e [Docker Compose](https://docs.docker.com/compose/install/) (para execução via Docker)
+- [Git](https://git-scm.com/)
+
+## Configuração do Ambiente
+
+1.  **Clone o repositório:**
+    ```bash
+    git clone <URL_DO_REPOSITORIO>
+    cd api-message-queue
+    ```
+
+2.  **Instale as dependências (usando Yarn):**
+    ```bash
+    yarn install
+    ```
+
+### Variáveis de Ambiente
+
+A aplicação pode ser configurada através de variáveis de ambiente. A porta padrão é `3000`.
+
+-   `PORT`: Porta em que a aplicação será executada. (Ex: `PORT=3001`)
+
+Crie um arquivo `.env` na raiz do projeto se precisar sobrescrever as configurações padrão (embora este projeto atualmente não leia um `.env` explicitamente, a variável `PORT` é lida via `process.env.PORT`).
+
+## Como Rodar a Aplicação
+
+### Usando Yarn (Desenvolvimento)
+
+1.  **Iniciar em modo de desenvolvimento (com watch):**
+    ```bash
+    yarn start:dev
+    ```
+    A aplicação estará disponível em `http://localhost:3000` (ou na porta configurada).
+
+2.  **Outros scripts úteis com Yarn:**
+    -   `yarn start`: Inicia a aplicação (sem watch, usando a build de `dist`).
+    -   `yarn build`: Compila o projeto TypeScript para JavaScript (saída em `dist/`).
+    -   `yarn start:prod`: Inicia a aplicação em modo de produção (requer `yarn build` antes).
+    -   `yarn start:debug`: Inicia em modo de desenvolvimento com debugging habilitado.
+
+### Usando Docker
+
+O projeto inclui um `Dockerfile` e um `docker-compose.yml` para facilitar a execução em contêineres.
+
+1.  **Construir a imagem e iniciar os contêineres (desenvolvimento):**
+    Este comando usa o `Dockerfile.dev` que monta o volume do código-fonte para live-reloading.
+    ```bash
+    docker-compose -f docker-compose.yml up --build app-dev
+    ```
+    A aplicação estará disponível em `http://localhost:3000` (ou na porta mapeada no `docker-compose.yml`).
+
+2.  **Construir a imagem e iniciar os contêineres (produção):**
+    Este comando usa o `Dockerfile` otimizado para produção.
+    ```bash
+    docker-compose -f docker-compose.yml up --build app
+    ```
+
+3.  **Parar os contêineres:**
+    ```bash
+    docker-compose -f docker-compose.yml down
+    ```
+
+O `docker-compose.yml` também define um serviço `prometheus` que pode ser iniciado para coletar métricas da aplicação.
+
+## Testes
+
+### Testes Unitários/Integração
+
+Os testes são escritos com Jest e podem ser encontrados na pasta `test/` ou ao lado dos arquivos de origem com a extensão `.spec.ts`.
+
+1.  **Rodar todos os testes:**
+    ```bash
+    yarn test
+    ```
+
+2.  **Rodar testes em modo watch:**
+    ```bash
+    yarn test:watch
+    ```
+
+### Testes End-to-End (e2e)
+
+Os testes e2e também usam Jest e estão configurados em `test/jest-e2e.json`.
+
+1.  **Rodar testes e2e:**
+    ```bash
+    yarn test:e2e
+    ```
+    Certifique-se de que a aplicação esteja rodando (localmente ou via Docker) antes de executar os testes e2e, ou ajuste-os para iniciar a aplicação se necessário.
+
+### Cobertura de Testes
+
+Para gerar um relatório de cobertura de testes:
 
 ```bash
-$ yarn install
+yarn test:cov
+```
+O relatório será gerado na pasta `coverage/`.
+
+## Linting e Formatação
+
+-   **Verificar e corrigir o lint (ESLint):**
+    ```bash
+    yarn lint
+    ```
+
+-   **Formatar o código (Prettier):**
+    ```bash
+    yarn format
+    ```
+
+-   **Verificar tipos (TypeScript):**
+    ```bash
+    yarn typecheck
+    ```
+
+Os hooks de pre-commit (Husky + lint-staged) estão configurados para rodar o lint em arquivos staged antes de cada commit.
+
+## Documentação da API (Swagger)
+
+Após iniciar a aplicação, a documentação da API (Swagger UI) estará disponível em:
+`http://localhost:3000/api/docs`
+
+## Métricas (Prometheus)
+
+A aplicação expõe métricas no endpoint `/metrics` para serem coletadas pelo Prometheus.
+Se estiver usando o `docker-compose.yml` fornecido, o Prometheus estará configurado para coletar essas métricas e pode ser acessado em `http://localhost:9090`.
+
+## Git Flow (Fluxo de Desenvolvimento)
+
+Este projeto segue um fluxo similar ao Git Flow:
+
+```mermaid
+graph LR
+    main((main)) <--- release((release))
+    release <--- develop((develop))
+    develop <--- feature((feature))
+    main <--- hotfix((hotfix))
+    hotfix ---> develop
 ```
 
-## Running the app
+**Branches Principais:**
+-   `main`: Contém o código de produção estável. Tags são criadas a partir desta branch para cada release.
+-   `develop`: Branch de integração para features. É a base para novas features e reflete o estado mais recente do desenvolvimento.
 
-```bash
-# development
-$ yarn run start
+**Branches de Suporte:**
+-   `feature/*` ou `feat/*`: Criadas a partir de `develop` para desenvolver novas funcionalidades. São mescladas de volta em `develop`.
+    -   Exemplo: `feature/user-authentication`, `feat/new-message-processor`
+-   `release/*`: Criadas a partir de `develop` quando uma versão está pronta para ser lançada. Permite a preparação final da release (testes, pequenas correções, atualização de documentação). Após a finalização, é mesclada em `main` (com tag) e também em `develop` (para incorporar quaisquer correções feitas na release).
+    -   Exemplo: `release/v1.0.0`
+-   `hotfix/*`: Criadas a partir de `main` para corrigir bugs críticos em produção. Após a correção, são mescladas de volta em `main` (com nova tag de patch) e também em `develop` (para garantir que a correção seja incorporada no desenvolvimento futuro).
+    -   Exemplo: `hotfix/fix-critical-bug-123`
 
-# watch mode
-$ yarn run start:dev
-
-# production mode
-$ yarn run start:prod
+**Resumo Visual (Fluxo):**
+```
+main    <------ release <------ develop <------ feature
+^      /           /           /
+|     /           /           /
+hotfix -----------/           /
+        ---------------------/
 ```
 
-## Test
+*(O diagrama acima é uma representação simplificada. Para a imagem exata que você forneceu, veja abaixo)*
 
-```bash
-# unit tests
-$ yarn run test
-
-# e2e tests
-$ yarn run test:e2e
-
-# test coverage
-$ yarn run test:cov
+```javascript
+main    <-- -- -- release <-- -- -- develop <-- -- -- feature
+^      /           /           /
+|     /           /           /
+hotfix -- -- -- -- -- -- -- --/           /
+        -- -- -- -- -- -- -- -- -- -- -- --/
 ```
 
-## Support
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## Estrutura do Projeto
 
-## Stay in touch
+O projeto segue uma arquitetura em camadas, inspirada na Clean Architecture:
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+-   `src/`
+    -   `application/`: Contém os casos de uso da aplicação e serviços de aplicação.
+        -   `services/`: Lógica de domínio/aplicação que pode ser compartilhada entre casos de uso.
+        -   `usecases/`: Casos de uso específicos da aplicação.
+    -   `config/`: Arquivos de configuração (ex: `datasource.ts`).
+    -   `domain/`: Entidades de domínio, interfaces de repositório e lógica de domínio pura.
+        -   `entities/`: Classes que representam os objetos de domínio.
+        -   `interfaces/`: Contratos para os repositórios.
+    -   `infra/`: Implementações concretas de interfaces da camada de domínio, como repositórios e módulos de banco de dados.
+        -   `database/`: Configuração e módulos relacionados ao banco de dados (TypeORM).
+        -   `repositories/`: Implementações dos repositórios.
+    -   `main.ts`: Ponto de entrada da aplicação NestJS.
+    -   `app.module.ts`: Módulo raiz da aplicação.
+    -   `metrics/`: Configuração e definição de métricas Prometheus.
+    -   `migrations/`: Migrations de banco de dados TypeORM.
+    -   `presentation/`: Camada responsável pela interação com o "mundo externo" (HTTP controllers, DTOs).
+        -   `controllers/`: Controladores NestJS que lidam com requisições HTTP.
+            -   `dto/`: Data Transfer Objects usados pelos controllers.
+    -   `shared/`: Código compartilhado entre diferentes camadas (ex: enums, helpers).
+    -   `swagger.ts`: Configuração do Swagger.
+-   `test/`: Testes e2e e de integração.
 
-## License
+---
 
-Nest is [MIT licensed](LICENSE).
+Sinta-se à vontade para contribuir ou reportar issues!

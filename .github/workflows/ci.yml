@@ -1,0 +1,29 @@
+# .github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+      - 'feature/*'
+      - 'release/*'
+      - 'hotfix/*'
+  pull_request:
+    branches:
+      - develop
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install deps
+        run: yarn install
+      - name: Run lint
+        run: yarn lint
+      - name: Run typecheck
+        run: yarn tsc --noEmit
+      - name: Run tests
+        run: yarn test
