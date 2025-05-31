@@ -110,10 +110,10 @@ describe('MessageRepository (In-Memory)', () => {
         updatedAt: new Date(),
       };
       const result = await repo.update(nonExistentMessageToUpdate);
-      expect(result).toEqual(nonExistentMessageToUpdate); // Retorna o objeto passado
+      expect(result).toEqual(nonExistentMessageToUpdate);
 
       const messages = await repo.findAll();
-      expect(messages).toHaveLength(0); // Garante que não foi adicionado
+      expect(messages).toHaveLength(0);
 
       const found = await repo.findById('non-existent-id');
       expect(found).toBeUndefined();

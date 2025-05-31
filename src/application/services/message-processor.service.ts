@@ -33,8 +33,6 @@ export class MessageProcessorService {
       await this.saveHistory(messageId, MessageStatus.FAILED, attempt -1, 'Message not found');
       return;
     }
-
-    // Update status to PROCESSING before starting
     msg.status = MessageStatus.PROCESSING;
     msg.updatedAt = new Date();
     await this.messageRepository.update(msg);
@@ -46,9 +44,8 @@ export class MessageProcessorService {
 
     const endTimer = messageProcessingDuration.startTimer({ id: msg.id });
 
-    // Simulating processing with setTimeout
     setTimeout(async () => {
-      const succeed = Math.random() > 0.5; // Simulate success or failure
+      const succeed = Math.random() > 0.5;
 
       if (succeed) {
         msg.status = MessageStatus.SUCCESS;
@@ -62,7 +59,6 @@ export class MessageProcessorService {
       } else {
         msg.status = MessageStatus.FAILED;
         msg.lastError = 'Simulated error during processing';
-        // msg.retries was already incremented by the use case that called this, or should be handled carefully if this service manages retries count internally
         messageProcessedCounter.inc({ status: 'FAILED' });
         
         this.logger.warn(
@@ -70,12 +66,9 @@ export class MessageProcessorService {
         );
         endTimer({ status: 'FAILED', id: msg.id });
         await this.saveHistory(msg.id, msg.status, msg.retries, msg.lastError);
-
-        // Logic for retrying is now outside this specific processing step
-        // The caller (use case) will decide if a retry is needed and call this.process again.
       }
       msg.updatedAt = new Date();
-      await this.messageRepository.update(msg); // Final update of message status
+      await this.messageRepository.update(msg);
     }, PROCESSING_TIMEOUT_MS);
   }
 
@@ -98,7 +91,7 @@ export class MessageProcessorService {
     const msg = await this.messageRepository.findById(messageId);
     if (!msg) {
       this.logger.warn(`Retry failed: Message not found [id=${messageId}]`);
-      throw new Error('Message not found for retry'); // Or specific NotFoundException
+      throw new Error('Message not found for retry');
     }
 
     if (msg.status !== MessageStatus.FAILED) {
@@ -117,13 +110,13 @@ export class MessageProcessorService {
 
     this.logger.log(`Attempting to retry message [id=${messageId}], current retries: ${msg.retries}`);
     
-    msg.retries += 1; // Increment retry count before processing
-    msg.lastError = undefined; // Clear last error before retry
-    await this.messageRepository.update(msg); // Save incremented retry count
+    msg.retries += 1;
+    msg.lastError = undefined;
+    await this.messageRepository.update(msg);
 
     messageRetryCounter.inc({ id: msg.id });
-    this.process(messageId, msg.retries); // msg.retries is now the current attempt number for this processing cycle
+    this.process(messageId, msg.retries);
 
-    return msg; // Return the message as it was at the point of initiating retry
+    return msg;
   }
 } 
