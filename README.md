@@ -46,7 +46,7 @@ Esta é uma API construída com NestJS para simular o processamento de mensagens
 
 1.  **Clone o repositório:**
     ```bash
-    git clone [<URL_DO_REPOSITORIO>](https://github.com/DedeOli21/api-message-queue)
+    git clone https://github.com/DedeOli21/api-message-queue
     cd api-message-queue
     ```
 
