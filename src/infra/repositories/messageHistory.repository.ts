@@ -1,23 +1,27 @@
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { MessageHistory } from 'src/domain/entities/messageHistory.entity';
 import { IMessageHistoryRepository } from 'src/domain/interfaces/messageHistory.repository.interface';
 import { Repository } from 'typeorm';
 
+@Injectable()
 export class MessageHistoryRepository implements IMessageHistoryRepository {
   constructor(
-    private readonly messageHistoryRepository: Repository<MessageHistory>,
+    @InjectRepository(MessageHistory)
+    private readonly typeormRepository: Repository<MessageHistory>,
   ) {}
 
   async save(messageHistory: MessageHistory): Promise<MessageHistory> {
-    return this.messageHistoryRepository.save(messageHistory);
+    return this.typeormRepository.save(messageHistory);
   }
 
   async findById(id: number): Promise<MessageHistory | undefined> {
-    return this.messageHistoryRepository.findOne({ where: { id } });
+    return this.typeormRepository.findOne({ where: { id } });
   }
 
   async findAll(status?: string): Promise<MessageHistory[]> {
     const query =
-      this.messageHistoryRepository.createQueryBuilder('messageHistory');
+      this.typeormRepository.createQueryBuilder('messageHistory');
 
     if (status) {
       query.where('messageHistory.status = :status', { status });
