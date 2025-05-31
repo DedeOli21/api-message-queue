@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmptyObject, IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateMessageDto {
   @IsString()
-  @IsNotEmptyObject()
+  @IsNotEmpty()
   @ApiProperty({
     description: 'The content of the message',
     example: 'Hello, this is a test message.',

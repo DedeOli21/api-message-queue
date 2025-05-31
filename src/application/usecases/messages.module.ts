@@ -3,8 +3,8 @@ import { CreateMessageUseCase } from './create-message.usecase';
 import { FindByIdMessageUseCase } from './find-by-id-message.usecase';
 import { RetryMessageUseCase } from './retry-message.usecase';
 import { FindAllMessageUseCase } from './find-all-message.usecase';
-import { MessageController } from 'src/presentation/controllers/message.controller';
 import { DatabaseModule } from 'src/infra/database/database.module';
+import { MessageProcessorService } from '../services/message-processor.service';
 
 const usecases = [
   CreateMessageUseCase,
@@ -15,8 +15,13 @@ const usecases = [
 
 @Module({
   imports: [DatabaseModule],
-  providers: usecases,
-  exports: usecases,
-  controllers: [MessageController],
+  providers: [
+    ...usecases,
+    MessageProcessorService,
+  ],
+  exports: [
+    ...usecases,
+    MessageProcessorService,
+  ],
 })
 export class MessagesModule {}

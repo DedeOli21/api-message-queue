@@ -1,83 +1,62 @@
 import { RetryMessageUseCase } from 'src/application/usecases/retry-message.usecase';
 import { Message } from 'src/domain/entities/message.entity';
-import { MessageRepository } from 'src/infra/repositories/message.repository';
 import { MessageStatus } from 'src/shared/enum';
+import { MessageProcessorService } from 'src/application/services/message-processor.service';
+import { HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
 
 describe('RetryMessageUseCase', () => {
   let useCase: RetryMessageUseCase;
-  let repo: MessageRepository;
+  let mockMessageProcessorService: jest.Mocked<MessageProcessorService>;
 
   beforeEach(() => {
-    repo = new MessageRepository();
-    useCase = new RetryMessageUseCase(repo);
+    mockMessageProcessorService = {
+      process: jest.fn(),
+      retryFailedMessage: jest.fn(),
+    } as any;
+    useCase = new RetryMessageUseCase(mockMessageProcessorService);
+    jest.spyOn(useCase['logger'], 'log').mockImplementation(() => {});
+    jest.spyOn(useCase['logger'], 'error').mockImplementation(() => {});
   });
 
-  it('should throw if message does not exist', async () => {
-    await expect(useCase.execute('non-existent-id')).rejects.toThrow(
-      'Message not found',
-    );
-  });
-
-  it('should throw if status is not FAILED', async () => {
-    const msg: Message = {
+  it('should call messageProcessorService.retryFailedMessage and return its result on success', async () => {
+    const mockMessage: Message = {
       id: '1',
       content: 'Test',
       status: MessageStatus.SUCCESS,
-      retries: 0,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    await repo.save(msg);
-
-    await expect(useCase.execute('1')).rejects.toThrow(
-      'Only failed messages can be retried',
-    );
-  });
-
-  it('should process FAILED message and set status to SUCCESS', async () => {
-    jest.spyOn(Math, 'random').mockReturnValue(0.9); // Force SUCCESS path
-    const msg: Message = {
-      id: '2',
-      content: 'Test success',
-      status: MessageStatus.FAILED,
       retries: 1,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    await repo.save(msg);
+    mockMessageProcessorService.retryFailedMessage.mockResolvedValue(mockMessage);
 
-    await useCase.execute('2');
-    await new Promise((res) => setTimeout(res, 1600));
-    const updated = await repo.findById('2');
-    expect(updated.status).toBe(MessageStatus.SUCCESS);
-    expect(updated.lastError).toBeUndefined();
+    const result = await useCase.execute('1');
 
-    jest.spyOn(Math, 'random').mockRestore();
+    expect(mockMessageProcessorService.retryFailedMessage).toHaveBeenCalledWith('1');
+    expect(result).toEqual(mockMessage);
   });
 
-  it('should process FAILED message and set status to FAILED (retry)', async () => {
-    jest.spyOn(Math, 'random').mockReturnValue(0.1); // Force FAILED path
-    const msg: Message = {
-      id: '3',
-      content: 'Test failed again',
-      status: MessageStatus.FAILED,
-      retries: 0,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    await repo.save(msg);
+  it('should throw NotFoundException if service throws "Message not found for retry"', async () => {
+    mockMessageProcessorService.retryFailedMessage.mockRejectedValue(new Error('Message not found for retry'));
 
-    await useCase.execute('3');
-    await new Promise((res) => setTimeout(res, 1600));
-    const updated = await repo.findById('3');
-    expect(updated.status).toBe(MessageStatus.PROCESSING);
-    expect(updated.lastError).toBe('Simulated error');
-    expect(updated.retries).toBe(1);
-
-    jest.spyOn(Math, 'random').mockRestore();
+    await expect(useCase.execute('non-existent-id')).rejects.toThrow(
+      new NotFoundException('Message not found for retry'),
+    );
+    expect(mockMessageProcessorService.retryFailedMessage).toHaveBeenCalledWith('non-existent-id');
   });
 
-  it('should return early if message does not exist in _processMessage', async () => {
-    await (useCase as any)._processMessage('non-existent-id');
+  it('should throw HttpException with BAD_REQUEST if service throws other errors', async () => {
+    mockMessageProcessorService.retryFailedMessage.mockRejectedValue(new Error('Only FAILED messages can be retried.'));
+
+    await expect(useCase.execute('1')).rejects.toThrow(
+      new HttpException('Only FAILED messages can be retried.', HttpStatus.BAD_REQUEST),
+    );
+    expect(mockMessageProcessorService.retryFailedMessage).toHaveBeenCalledWith('1');
+
+    mockMessageProcessorService.retryFailedMessage.mockRejectedValue(new Error('Max retries reached for message.'));
+    await expect(useCase.execute('2')).rejects.toThrow(
+      new HttpException('Max retries reached for message.', HttpStatus.BAD_REQUEST),
+    );
+    expect(mockMessageProcessorService.retryFailedMessage).toHaveBeenCalledWith('2');
   });
+
 });
